@@ -20,7 +20,7 @@ class TaskCommentController extends Controller
     {
         $this->authorize('view', $task);
 
-        $comments = $task->comments()->with('user')->paginate(min((int) $request->query('per_page', 15), 50));
+        $comments = $task->comments()->with('user.employee')->paginate(min((int) $request->query('per_page', 15), 50));
 
         return $this->paginated($comments, TaskCommentResource::class);
     }
@@ -47,7 +47,7 @@ class TaskCommentController extends Controller
 
         event(new TaskCommentAdded($task->fresh(), $comment, $request->user()));
 
-        return $this->success(new TaskCommentResource($comment->loadMissing('user')), 'Comment added.', 201);
+        return $this->success(new TaskCommentResource($comment->loadMissing('user.employee')), 'Comment added.', 201);
     }
 
     public function update(UpdateCommentRequest $request, Task $task, TaskComment $comment): JsonResponse
@@ -65,7 +65,7 @@ class TaskCommentController extends Controller
             'edited_at' => now(),
         ]);
 
-        return $this->success(new TaskCommentResource($comment->fresh()->loadMissing('user')), 'Comment updated.');
+        return $this->success(new TaskCommentResource($comment->fresh()->loadMissing('user.employee')), 'Comment updated.');
     }
 
     public function destroy(Request $request, Task $task, TaskComment $comment): JsonResponse

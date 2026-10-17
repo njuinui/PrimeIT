@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Support\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,6 +23,7 @@ class TaskCommentResource extends JsonResource
             'author' => $this->whenLoaded('user', fn () => $this->user !== null ? [
                 'id'   => $this->user->uuid,
                 'name' => $this->user->name,
+                'avatar_url' => UserAvatar::url($this->user),
             ] : null),
 
             'can_edit'   => $request->user()?->id === $this->user_id,

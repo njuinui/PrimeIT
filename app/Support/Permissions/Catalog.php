@@ -50,6 +50,20 @@ final class Catalog
                 'tasks.comment'  => 'Comment on tasks',
             ],
 
+            'Work Tracking' => [
+                'work.view' => 'View work history and contribution insights on projects, teams and people they can see',
+                'work.log'  => 'Log work updates on projects they take part in',
+            ],
+
+            'Design' => [
+                'design.view'   => 'View tracked design and prototype files on projects they can see',
+                'design.manage' => 'Add design files and log design versions on projects they take part in',
+            ],
+
+            'Chat' => [
+                'chat.use' => 'Send and read team, project and direct messages',
+            ],
+
             'Notifications' => [
                 'notifications.view' => 'Access the notification center',
             ],

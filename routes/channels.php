@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -25,4 +26,11 @@ Broadcast::channel('App.Models.User.{uuid}', function (User $user, string $uuid)
 // subscribe; the pushed payload itself carries no task content.
 Broadcast::channel('workspace.tasks', function (User $user): bool {
     return $user->can('tasks.view');
+});
+
+// Work/design pulse for one project. Visible to anyone who may view the project.
+Broadcast::channel('project.{uuid}', function (User $user, string $uuid): bool {
+    $project = Project::query()->where('uuid', $uuid)->first();
+
+    return $project !== null && $user->can('work.view') && $user->can('view', $project);
 });

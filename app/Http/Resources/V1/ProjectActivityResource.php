@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Support\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,6 +20,7 @@ class ProjectActivityResource extends JsonResource
             'actor'       => $this->whenLoaded('user', fn () => $this->user !== null ? [
                 'id'   => $this->user->uuid,
                 'name' => $this->user->name,
+                'avatar_url' => UserAvatar::url($this->user),
             ] : null),
             'created_at' => $this->created_at?->toISOString(),
         ];

@@ -44,7 +44,7 @@ class PaymentController extends Controller
         return $this->success([
             'payment' => new PaymentResource($payment->loadMissing('recorder')),
             'expense' => new ExpenseResource($expense->fresh()->loadMissing(
-                ['category', 'project', 'department', 'submitter', 'decider'],
+                ['category', 'project', 'department', 'submitter.employee', 'decider.employee'],
             )),
         ], 'Payment recorded.', 201);
     }
@@ -79,7 +79,7 @@ class PaymentController extends Controller
 
         return $this->success(
             new ExpenseResource($expense->fresh()->loadMissing(
-                ['category', 'project', 'department', 'submitter', 'decider', 'payments.recorder'],
+                ['category', 'project', 'department', 'submitter.employee', 'decider.employee', 'payments.recorder'],
             )),
             'Payment removed.',
         );

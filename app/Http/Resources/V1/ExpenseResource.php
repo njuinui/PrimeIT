@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Support\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -48,11 +49,13 @@ class ExpenseResource extends JsonResource
             'submitter' => $this->whenLoaded('submitter', fn () => [
                 'id'   => $this->submitter->uuid,
                 'name' => $this->submitter->name,
+                'avatar_url' => UserAvatar::url($this->submitter),
             ]),
 
             'decider' => $this->whenLoaded('decider', fn () => $this->decider !== null ? [
                 'id'   => $this->decider->uuid,
                 'name' => $this->decider->name,
+                'avatar_url' => UserAvatar::url($this->decider),
             ] : null),
 
             'payments' => $this->whenLoaded('payments', fn () => PaymentResource::collection($this->payments)->resolve()),

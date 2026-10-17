@@ -32,7 +32,7 @@ class ApprovalController extends Controller
             abort_unless($user->can('approvals.view'), 403);
         }
 
-        $query = ApprovalRequest::query()->with(['requester', 'steps.decisions.user']);
+        $query = ApprovalRequest::query()->with(['requester.employee', 'steps.decisions.user']);
 
         $requests = match ($scope) {
             'requested' => $query->where('requested_by', $user->id)->latest('id')->get(),
@@ -69,7 +69,7 @@ class ApprovalController extends Controller
 
         abort_unless($allowed, 403);
 
-        $approvalRequest->loadMissing(['requester', 'steps.decisions.user', 'workflow']);
+        $approvalRequest->loadMissing(['requester.employee', 'steps.decisions.user', 'workflow']);
 
         return $this->success(new ApprovalRequestResource($approvalRequest));
     }
@@ -92,7 +92,7 @@ class ApprovalController extends Controller
 
         $this->approvals->recordDecision($approvalRequest, $request->user(), $approved, $note);
 
-        $approvalRequest = $approvalRequest->fresh(['requester', 'steps.decisions.user', 'workflow']);
+        $approvalRequest = $approvalRequest->fresh(['requester.employee', 'steps.decisions.user', 'workflow']);
 
         return $this->success(
             new ApprovalRequestResource($approvalRequest),

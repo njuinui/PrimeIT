@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ExpenseController extends Controller
 {
-    private const RELATIONS = ['category', 'project', 'department', 'submitter', 'decider'];
+    private const RELATIONS = ['category', 'project', 'department', 'submitter.employee', 'decider.employee'];
 
     public function __construct(
         private readonly ApprovalEngine $approvals,

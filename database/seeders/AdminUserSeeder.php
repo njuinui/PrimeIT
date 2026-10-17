@@ -9,20 +9,42 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
+    /** Local-development convenience only — never used in production. */
+    private const DEV_PASSWORD = 'PrimeIT@2026';
+
     public function run(): void
     {
-        $user = User::updateOrCreate(
-            ['email' => 'admin@primeit.com'],
+        $email    = (string) config('primeit.admin.email');
+        $name     = (string) config('primeit.admin.name');
+        $password = config('primeit.admin.password');
+
+        if ($password === null || $password === '') {
+            if (app()->isProduction()) {
+                $this->command?->error(
+                    'ADMIN_PASSWORD is not set — refusing to create an administrator with a default password in production. '
+                    . 'Set ADMIN_EMAIL / ADMIN_PASSWORD, or run: php artisan primeit:admin'
+                );
+
+                return;
+            }
+
+            $password = self::DEV_PASSWORD;
+        }
+
+        // firstOrCreate: re-running the seeder must never reset an existing account's password.
+        $user = User::firstOrCreate(
+            ['email' => $email],
             [
-                'name'              => 'PrimeIT Admin',
-                'password'          => Hash::make('PrimeIT@2026'),
+                'name'              => $name,
+                'password'          => Hash::make((string) $password),
                 'email_verified_at' => now(),
                 'status'            => 'active',
-            ]
+            ],
         );
+
         $user->syncRoles(['super_admin']);
 
-        Employee::updateOrCreate(
+        Employee::firstOrCreate(
             ['user_id' => $user->id],
             [
                 'employee_number' => 'EMP-0001',
@@ -32,7 +54,7 @@ class AdminUserSeeder extends Seeder
                 'employment_type' => 'full_time',
                 'hire_date'       => '2023-01-09',
                 'status'          => 'active',
-            ]
+            ],
         );
     }
 }

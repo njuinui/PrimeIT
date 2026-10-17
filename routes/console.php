@@ -14,3 +14,6 @@ Schedule::command('reminders:send')->everyFiveMinutes();
 
 // ── Approval escalation (Phase 12) ──────────────────────────────
 Schedule::command('approvals:escalate')->hourly();
+
+// ── Design tracking ─────────────────────────────────────────────
+Schedule::command('design:sync-figma')->everyFifteenMinutes();

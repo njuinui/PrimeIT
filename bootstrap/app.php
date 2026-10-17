@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\ResetAuthState;
+use App\Http\Middleware\SecurityHeaders;
 use App\Support\ApiExceptionRenderer;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +24,18 @@ return Application::configure(basePath: dirname(__DIR__))
             ForceJsonResponse::class,
             ResetAuthState::class,
         ]);
+
+        // Behind a load balancer / reverse proxy (Render, Nginx, Cloudflare…) the real
+        // scheme and client IP come from forwarded headers. Set TRUSTED_PROXIES=* or a
+        // comma-separated list of proxy IPs in production.
+        $trusted = env('TRUSTED_PROXIES');
+        if ($trusted !== null && $trusted !== '') {
+            $middleware->trustProxies(at: $trusted === '*' ? '*' : array_map('trim', explode(',', $trusted)));
+        }
+
+        // Baseline browser hardening on every response, and the per-user API rate limit.
+        $middleware->append(SecurityHeaders::class);
+        $middleware->throttleApi();
 
         // RBAC middleware aliases.
         $middleware->alias([

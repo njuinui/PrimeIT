@@ -4,7 +4,9 @@ namespace App\Http\Resources\V1;
 
 use App\Domain\Approvals\ApprovalEngine;
 use App\Models\Expense;
+use App\Support\UserAvatar;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +48,7 @@ class ApprovalRequestResource extends JsonResource
             'requester' => $this->whenLoaded('requester', fn () => [
                 'id'   => $this->requester->uuid,
                 'name' => $this->requester->name,
+                'avatar_url' => UserAvatar::url($this->requester),
             ]),
 
             'subject' => $subject,
@@ -55,8 +58,17 @@ class ApprovalRequestResource extends JsonResource
 
                 $approvers = $approverIds === []
                     ? []
-                    : DB::table('users')->whereIn('id', $approverIds)->get(['id', 'uuid', 'name'])
-                        ->map(fn ($user) => ['id' => $user->uuid, 'name' => $user->name])
+                    : DB::table('users')
+                        ->leftJoin('employees', function ($join) {
+                            $join->on('employees.user_id', '=', 'users.id')->whereNull('employees.deleted_at');
+                        })
+                        ->whereIn('users.id', $approverIds)
+                        ->get(['users.id', 'users.uuid', 'users.name', 'employees.avatar'])
+                        ->map(fn ($user) => [
+                            'id'         => $user->uuid,
+                            'name'       => $user->name,
+                            'avatar_url' => $user->avatar ? Storage::disk('public')->url($user->avatar) : null,
+                        ])
                         ->values()->all();
 
                 return [

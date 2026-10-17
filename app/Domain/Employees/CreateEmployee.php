@@ -4,6 +4,7 @@ namespace App\Domain\Employees;
 
 use App\Models\Employee;
 use App\Models\User;
+use App\Support\ImageOptimizer;
 use App\Notifications\Employee\EmployeeInvitedNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -21,7 +22,7 @@ final class CreateEmployee
     {
         $avatar = $employeeData['avatar'] ?? null;
         unset($employeeData['avatar']);
-        $avatarPath = $avatar?->store('employees/avatars', 'public') ?: null;
+        $avatarPath = $avatar ? (ImageOptimizer::storePublic($avatar, 'employees/avatars') ?: null) : null;
 
         try {
             $employee = DB::transaction(function () use ($employeeData, $email, $avatarPath): Employee {

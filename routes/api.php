@@ -51,6 +51,14 @@ use App\Http\Controllers\Api\V1\DocumentFolderController;
 use App\Http\Controllers\Api\V1\DocumentGrantController; 
 
 
+// Work tracking, design tracking, chat
+use App\Http\Controllers\Api\V1\ChatConversationController;
+use App\Http\Controllers\Api\V1\SearchController;
+use App\Http\Controllers\Api\V1\ChatMessageController;
+use App\Http\Controllers\Api\V1\ContributionController;
+use App\Http\Controllers\Api\V1\DesignFileController;
+use App\Http\Controllers\Api\V1\WorkUpdateController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -331,6 +339,60 @@ Route::prefix('v1')
                 'dashboard/stats',
                 [DashboardController::class, 'stats']
             )->name('dashboard.stats');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Work tracking (GitHub-style progress)
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get('search', SearchController::class)->middleware('throttle:60,1')->name('search');
+
+            Route::get('projects/{project}/work-updates', [WorkUpdateController::class, 'index'])->name('projects.work-updates.index');
+            Route::post('projects/{project}/work-updates', [WorkUpdateController::class, 'store'])->name('projects.work-updates.store');
+            Route::get('projects/{project}/contributions', [ContributionController::class, 'project'])->name('projects.contributions');
+            Route::get('teams/{team}/contributions', [ContributionController::class, 'team'])->name('teams.contributions');
+            Route::get('users/{user}/contributions', [ContributionController::class, 'user'])->name('users.contributions');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Design tracking (Figma, Adobe XD, …)
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get('projects/{project}/design-files', [DesignFileController::class, 'index'])->name('projects.design-files.index');
+            Route::post('projects/{project}/design-files', [DesignFileController::class, 'store'])->name('projects.design-files.store');
+            Route::get('design-files/{designFile}', [DesignFileController::class, 'show'])->name('design-files.show');
+            Route::put('design-files/{designFile}', [DesignFileController::class, 'update'])->name('design-files.update');
+            Route::delete('design-files/{designFile}', [DesignFileController::class, 'destroy'])->name('design-files.destroy');
+            Route::post('design-files/{designFile}/versions', [DesignFileController::class, 'storeVersion'])->name('design-files.versions.store');
+            Route::post('design-files/{designFile}/sync', [DesignFileController::class, 'sync'])
+                ->middleware('throttle:10,1')
+                ->name('design-files.sync');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Chat — direct, group, team and project conversations
+            |--------------------------------------------------------------------------
+            */
+
+            Route::prefix('chat')->name('chat.')->group(function (): void {
+                Route::get('conversations', [ChatConversationController::class, 'index'])->name('conversations.index');
+                Route::post('conversations', [ChatConversationController::class, 'store'])->name('conversations.store');
+                Route::get('conversations/{conversation}', [ChatConversationController::class, 'show'])->name('conversations.show');
+                Route::post('conversations/{conversation}/read', [ChatConversationController::class, 'read'])->name('conversations.read');
+                Route::get('conversations/{conversation}/messages', [ChatMessageController::class, 'index'])->name('messages.index');
+                Route::post('conversations/{conversation}/messages', [ChatMessageController::class, 'store'])
+                    ->middleware('throttle:60,1')
+                    ->name('messages.store');
+                Route::put('messages/{message}', [ChatMessageController::class, 'update'])->name('messages.update');
+                Route::delete('messages/{message}', [ChatMessageController::class, 'destroy'])->name('messages.destroy');
+                Route::get('unread-count', [ChatConversationController::class, 'unreadCount'])->name('unread-count');
+                Route::get('people', [ChatConversationController::class, 'people'])->name('people');
+            });
 
 
             /*

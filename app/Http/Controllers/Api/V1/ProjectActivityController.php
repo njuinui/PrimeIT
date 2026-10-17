@@ -15,7 +15,7 @@ class ProjectActivityController extends Controller
         $this->authorize('view', $project);
 
         $activities = $project->activities()
-            ->with('user')
+            ->with('user.employee')
             ->paginate(min((int) $request->query('per_page', 15), 50));
 
         return $this->paginated($activities, ProjectActivityResource::class);

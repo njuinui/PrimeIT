@@ -2,6 +2,7 @@
 
 namespace App\Domain\Employees;
 
+use App\Support\ImageOptimizer;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ final class UpdateEmployee
         unset($data['avatar'], $data['remove_avatar']);
 
         $oldAvatar = $employee->avatar;
-        $newAvatarPath = $avatar?->store('employees/avatars', 'public') ?: null;
+        $newAvatarPath = $avatar ? (ImageOptimizer::storePublic($avatar, 'employees/avatars') ?: null) : null;
 
         if ($newAvatarPath !== null) {
             $data['avatar'] = $newAvatarPath;

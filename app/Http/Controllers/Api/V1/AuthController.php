@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Support\ImageOptimizer;
 use App\Domain\Auth\IssueLoginToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -83,7 +84,7 @@ class AuthController extends Controller
             return $this->error('A linked employee profile is required to set a profile photo.', 422);
         }
 
-        $photoPath = $validated['photo']->store('employees/avatars', 'public');
+        $photoPath = ImageOptimizer::storePublic($validated['photo'], 'employees/avatars');
 
         if ($photoPath === false) {
             return $this->error('Unable to store the profile photo. Please try again.', 500);

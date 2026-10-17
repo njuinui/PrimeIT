@@ -3,6 +3,7 @@
 namespace App\Domain\Tasks;
 
 use App\Domain\Projects\RecalculateProjectProgress;
+use App\Domain\Work\RecordWork;
 use App\Events\TaskStatusChanged;
 use App\Models\Project;
 use App\Models\ProjectActivity;
@@ -14,7 +15,10 @@ use Illuminate\Validation\ValidationException;
 
 final class UpdateTask
 {
-    public function __construct(private readonly RecalculateProjectProgress $recalculateProject) {}
+    public function __construct(
+        private readonly RecalculateProjectProgress $recalculateProject,
+        private readonly RecordWork $recordWork,
+    ) {}
 
     /**
      * @param array<string, mixed> $data validated attributes (may contain status)
@@ -98,6 +102,9 @@ final class UpdateTask
                 };
 
                 ProjectActivity::record($project, $actor, $event, $description, $task);
+
+                // Mirror into the work feed so status moves show on the contribution graph.
+                $this->recordWork->system($project, $actor, $task, $description);
 
                 if ($newStatus === 'completed' || $oldStatus === 'completed') {
                     ($this->recalculateProject)($project);

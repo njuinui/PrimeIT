@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(TaskCommentAdded::class, SendTaskCommentNotifications::class);
                 Event::listen(NotificationSent::class, BroadcastNotificationCreated::class);
 
-        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(240)
             ->by($request->user()?->id ?: $request->ip()));
 
         RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(5)->by(

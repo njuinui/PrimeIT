@@ -76,14 +76,32 @@ function makeOrg(): array
     return compact('engineering', 'design', 'platform', 'designTeam', 'manager', 'report', 'designer');
 }
 
+
+
 function makeProject(array $attributes = []): Project
 {
-    $employee = $attributes['owner_id'] ?? Employee::query()->first() ?? makeEmployee('manager');
+    $owner = $attributes['owner_id'] ?? null;
+
+    if ($owner instanceof Employee) {
+        $employee = $owner;
+    } elseif ($owner !== null) {
+        $employee = Employee::query()->findOrFail($owner);
+    } else {
+        $employee = Employee::query()->first()
+            ?? makeEmployee('manager');
+    }
+
+    $number = Project::count() + 1;
 
     return Project::create(array_merge([
-        'project_number' => 'PRJ-'.str_pad((string) (Project::count() + 1), 4, '0', STR_PAD_LEFT),
-        'name' => 'Project '.(Project::count() + 1),
-        'slug' => 'project-'.(Project::count() + 1),
+        'project_number' => 'PRJ-' . str_pad(
+            (string) $number,
+            4,
+            '0',
+            STR_PAD_LEFT
+        ),
+        'name' => 'Project ' . $number,
+        'slug' => 'project-' . $number,
         'status' => 'in_progress',
         'priority' => 'medium',
         'owner_id' => $employee->id,
@@ -91,6 +109,8 @@ function makeProject(array $attributes = []): Project
         'created_by' => $employee->user_id,
     ], $attributes));
 }
+
+
 
 function makeTask(array $attributes = []): Task
 {
