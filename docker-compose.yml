@@ -1,0 +1,58 @@
+# Production-style stack: web + queue worker + scheduler + realtime server + MySQL + Redis.
+#   cp .env.production.example .env   (then fill it in; DB_HOST=db, REDIS_HOST=redis)
+#   docker compose up -d --build
+# Untested template — adjust volumes, secrets and TLS termination for your host.
+x-app: &app
+  build: .
+  env_file: .env
+  restart: unless-stopped
+  depends_on: [db, redis]
+  volumes:
+    - app-storage:/var/www/html/storage/app
+
+services:
+  app:
+    <<: *app
+    environment:
+      RUN_MIGRATIONS: "true"          # only this container migrates
+    ports:
+      - "10000:10000"
+
+  queue:
+    <<: *app
+    command: php artisan queue:work --tries=3 --timeout=90 --sleep=3 --max-time=3600
+    healthcheck: { disable: true }
+
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+    healthcheck: { disable: true }
+
+  reverb:
+    <<: *app
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
+    healthcheck: { disable: true }
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-primeit}
+      MYSQL_USER: ${DB_USERNAME:-primeit}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  app-storage:
+  db-data:
+  redis-data:
