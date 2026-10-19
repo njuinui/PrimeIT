@@ -1,26 +1,21 @@
+
 <?php
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    */
-
-    'paths' => ['api/*', 'auth/*', 'login', 'logout', 'register', 'sanctum/csrf-cookie'],
+    'paths' => [
+        'api/*',
+        'auth/*',
+        'sanctum/csrf-cookie',
+    ],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter([
+    'allowed_origins' => [
         env('FRONTEND_URL', 'http://localhost:5173'),
-        'https://prime-i-tfrontend.vercel.app',   // stable production URL
-    ]),
-
-    'allowed_origins_patterns' => [
-        // all Vercel preview deploys for this project
-        '#^https://prime-i-tfrontend-[a-z0-9-]+\.vercel\.app$#',
     ],
+
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
