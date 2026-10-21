@@ -40,10 +40,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends $PHPIZE_DEPS \
 # Install Composer.
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+
 WORKDIR /var/www/html
+
+# Ensure the Aiven CA certificate is included in the image.
+COPY docker/certs/ca.pem /var/www/html/docker/certs/ca.pem
 
 # Copy the Laravel application.
 COPY . .
+
 
 # Point Apache to Laravel's public directory.
 RUN sed -i 's#DocumentRoot /var/www/html#DocumentRoot /var/www/html/public#' \
